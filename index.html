@@ -1,105 +1,302 @@
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026第一屆澳門醫療界運動會 - 3000米田徑比賽報名</title>
-    <style>
-        body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input[type="text"], input[type="date"], select { width: 100%; padding: 8px; box-sizing: border-box; }
-        .checkbox-group { display: flex; align-items: start; gap: 10px; background: #f9f9f9; padding: 10px; border-radius: 5px; }
-        button { width: 100%; padding: 12px; background-color: #0056b3; color: white; border: none; font-size: 16px; cursor: pointer; border-radius: 5px; }
-        button:disabled { background-color: #ccc; }
-        #resultMessage { margin-top: 20px; font-weight: bold; text-align: center; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026第一屆澳門醫療界運動會 - 3000米田徑比賽報名</title>
+<style>
+  :root { --line:#000; --accent:#0056b3; --warn:#b00020; --ok:#1a7f37; }
+  * { box-sizing: border-box; }
+  body { font-family:'Noto Sans TC','Microsoft JhengHei','PingFang TC',sans-serif; color:#111; line-height:1.5;
+         max-width:640px; margin:0 auto; padding:20px 16px 48px; }
+
+  /* 標題（對齊 PDF） */
+  h1 { font-size:22px; text-align:center; margin:0 0 4px; letter-spacing:1px; }
+  h2 { font-size:18px; text-align:center; margin:0 0 4px; }
+  .en { text-align:center; color:#444; font-size:13px; margin:0 0 8px; }
+  .divider { border:0; border-top:2px solid var(--line); margin:8px 0 12px; }
+  .event { display:inline-block; border:1.5px solid var(--line); padding:6px 14px; font-weight:bold; margin:0 0 6px; }
+
+  .section-title { font-size:16px; font-weight:bold; border-left:5px solid var(--line); padding-left:8px; margin:24px 0 12px; }
+
+  /* 說明框 */
+  .info { border:1.5px solid var(--line); padding:12px 14px; font-size:14px; background:#fafafa; }
+  .info h3 { font-size:14px; margin:0 0 6px; }
+  .info table { width:100%; border-collapse:collapse; margin:4px 0 12px; font-size:13.5px; }
+  .info th, .info td { border:1px solid #666; padding:5px 8px; text-align:center; }
+  .info th { background:#eaeaea; }
+  .info p { margin:2px 0; }
+
+  /* 欄位 */
+  .field { margin-bottom:14px; }
+  .field > label { display:block; font-weight:bold; margin-bottom:5px; font-size:14px; }
+  .req { color:var(--warn); }
+  input[type="text"], input[type="tel"], input[type="date"] {
+    width:100%; padding:9px 10px; font-size:15px; border:1.5px solid #333; border-radius:4px; background:#fff; }
+  input[readonly] { background:#f0f0f0; font-weight:bold; }
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:0 14px; }
+  @media (max-width:520px) { .row { grid-template-columns:1fr; } }
+  .radios { display:flex; gap:22px; padding:8px 0; }
+  .radios label { display:inline-flex; align-items:center; gap:6px; font-weight:normal; margin:0; font-size:15px; }
+  .hint { font-size:12.5px; color:#555; margin-top:4px; }
+  .hint.warn { color:var(--warn); font-weight:bold; }
+  .hint.ok { color:var(--ok); }
+
+  /* 聲明 */
+  .decl { border:1.5px solid var(--line); padding:12px 14px; font-size:14px; text-align:justify; }
+  .agree { display:flex; gap:10px; align-items:flex-start; margin:12px 0; font-weight:bold; }
+  .agree input { margin-top:4px; transform:scale(1.2); }
+
+  /* 簽署 */
+  .sig-wrap { border:1.5px solid var(--line); background:#fff; }
+  #sigCanvas { display:block; width:100%; height:160px; touch-action:none; cursor:crosshair; }
+  .sig-tools { display:flex; justify-content:space-between; align-items:center; margin-top:6px; font-size:13px; color:#555; }
+  .btn-sec { padding:6px 14px; background:#fff; border:1.5px solid #333; border-radius:4px; cursor:pointer; font-size:13px; }
+  .sig-date { margin-top:10px; font-size:15px; }
+
+  button#submitBtn { width:100%; padding:13px; margin-top:20px; background:var(--accent); color:#fff; border:0;
+                     font-size:16px; border-radius:5px; cursor:pointer; }
+  button#submitBtn:disabled { background:#bbb; cursor:not-allowed; }
+  fieldset { border:0; padding:0; margin:0; min-width:0; }
+  #resultMessage { margin-top:18px; font-weight:bold; text-align:center; }
+  .err { color:var(--warn); }
+  .closed { border:2px solid var(--warn); color:var(--warn); padding:10px; text-align:center; font-weight:bold; margin:12px 0; display:none; }
+</style>
 </head>
 <body>
 
-    <h2>3000米田徑比賽報名表</h2>
-    
-    <form id="regForm">
-        <div class="form-group"><label>中文姓名 *</label><input type="text" id="name" required></div>
-        <div class="form-group"><label>性別 *</label>
-            <select id="gender" required><option value="">請選擇</option><option value="男">男</option><option value="女">女</option></select>
-        </div>
-        <div class="form-group"><label>出生日期 *</label><input type="date" id="dob" required></div>
-        <div class="form-group"><label>報名組別 *</label>
-            <select id="group" required>
-                <option value="">請選擇</option>
-                <option value="男子公開組">男子公開組</option><option value="男子先進組">男子先進組</option>
-                <option value="女子公開組">女子公開組</option><option value="女子先進組">女子先進組</option>
-            </select>
-        </div>
-        <div class="form-group"><label>身份證明文件號碼 *</label><input type="text" id="id_num" required></div>
-        <div class="form-group"><label>醫療人員執照編號/工作證編號 *</label><input type="text" id="license_num" required></div>
-        <div class="form-group"><label>所屬機構 *</label><input type="text" id="org" required></div>
-        <div class="form-group"><label>員工證編號</label><input type="text" id="emp_id"></div>
-        <div class="form-group"><label>聯絡電話 *</label><input type="text" id="phone" required></div>
-        <div class="form-group"><label>緊急聯絡人 *</label><input type="text" id="emerg_contact" required></div>
-        <div class="form-group"><label>緊急聯絡電話 *</label><input type="text" id="emerg_phone" required></div>
+  <h1>2026第一屆澳門醫療界運動會</h1>
+  <h2>3000米田徑比賽報名表</h2>
+  <p class="en">Athletics — 3,000 Metres · Registration Form</p>
+  <hr class="divider">
+  <div class="event">賽事項目：3000米</div>
 
-        <div class="checkbox-group">
-            <input type="checkbox" id="agreement" required>
-            <label for="agreement" style="font-weight: normal; font-size: 0.9em;">
-                <b>健康及參賽聲明：</b>本人確認以上所填資料真實、完整。本人聲明目前身體狀況適合參加比賽，已了解參賽風險並願意遵守大會指示。本人已閱讀並同意上述聲明。
-            </label>
-        </div>
+  <div class="info">
+    <h3>5.2. 組別表（以 2026/11/22 為年齡基準計算）</h3>
+    <table>
+      <tr><th>組別</th><th>出生年份</th><th>年齡</th></tr>
+      <tr><td>男子／女子公開組</td><td>1981–2006 年</td><td>20–45 歲</td></tr>
+      <tr><td>男子／女子先進組</td><td>1980 年以前</td><td>46 歲以上</td></tr>
+    </table>
+    <h3>6. 報名日期及報名方法</h3>
+    <p>6.1. 由即日起至 11 月 06 日，名額先到先得，額滿即止。</p>
+  </div>
 
-        <button type="submit" id="submitBtn">送出報名資料</button>
-    </form>
+  <div class="closed" id="closedBanner">報名已截止（截止日期：2026年11月06日）。</div>
 
-    <div id="resultMessage"></div>
+  <form id="regForm" novalidate>
+  <fieldset id="fields">
 
-    <script>
-        document.getElementById('regForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const btn = document.getElementById('submitBtn');
-            const resultDiv = document.getElementById('resultMessage');
-            btn.disabled = true;
-            btn.innerText = "資料處理中，正在生成報名表...";
+    <div class="section-title">一、參加者資料</div>
 
-            const data = {
-                name: document.getElementById('name').value,
-                gender: document.getElementById('gender').value,
-                dob: document.getElementById('dob').value,
-                group: document.getElementById('group').value,
-                id_num: document.getElementById('id_num').value,
-                license_num: document.getElementById('license_num').value,
-                org: document.getElementById('org').value,
-                emp_id: document.getElementById('emp_id').value,
-                phone: document.getElementById('phone').value,
-                emerg_contact: document.getElementById('emerg_contact').value,
-                emerg_phone: document.getElementById('emerg_phone').value
-            };
+    <div class="row">
+      <div class="field"><label for="name">中文姓名 <span class="req">*</span></label>
+        <input type="text" id="name" required></div>
+      <div class="field"><label>性別 <span class="req">*</span></label>
+        <div class="radios">
+          <label><input type="radio" name="gender" value="男" required> 男</label>
+          <label><input type="radio" name="gender" value="女"> 女</label>
+        </div></div>
+    </div>
 
-            // ⚠️ 將下方的 URL 替換成你剛剛部署 Apps Script 獲得的網址
-            const scriptURL = 'https://script.google.com/macros/s/AKfycbwr_XiNG5IfKWV5LR2l2TYUXRzfSL0C8dWbut6KNSFAQArq4SxhTlVEtSqPeO973F6T/exec';
+    <div class="row">
+      <div class="field"><label for="dob">出生日期 <span class="req">*</span></label>
+        <input type="date" id="dob" required min="1900-01-01"></div>
+      <div class="field"><label for="group">報名組別（自動判定）</label>
+        <input type="text" id="group" readonly placeholder="選擇性別及出生日期後自動顯示"></div>
+    </div>
+    <div class="hint" id="groupHint" style="margin:-8px 0 14px;">請先選擇性別及出生日期，系統會自動判定組別。</div>
 
-            fetch(scriptURL, {
-                method: 'POST',
-                body: JSON.stringify(data),
-            })
-            .then(res => res.json())
-            .then(response => {
-                if(response.status === "success"){
-                    resultDiv.innerHTML = `<span style="color:green;">報名成功！</span><br><br>
-                    <a href="${response.pdfUrl}" target="_blank" style="display:inline-block; padding:10px; background:#28a745; color:white; text-decoration:none; border-radius:5px;">📥 點此下載/查看您的專屬 PDF 報名表</a>`;
-                    document.getElementById('regForm').reset();
-                    btn.style.display = "none";
-                } else {
-                    resultDiv.innerHTML = `<span style="color:red;">發生錯誤，請稍後再試。</span>`;
-                    btn.disabled = false;
-                    btn.innerText = "送出報名資料";
-                }
-            })
-            .catch(error => {
-                resultDiv.innerHTML = `<span style="color:red;">網路錯誤，請稍後再試。</span>`;
-                btn.disabled = false;
-                btn.innerText = "送出報名資料";
-            });
-        });
-    </script>
+    <div class="field"><label for="id_num">身份證明文件號碼 <span class="req">*</span></label>
+      <input type="text" id="id_num" required></div>
+
+    <div class="field"><label for="license_num">醫療人員執照編號／實習執照編號／工作證編號／資格認可證書編號 <span class="req">*</span></label>
+      <input type="text" id="license_num" required></div>
+
+    <div class="row">
+      <div class="field"><label for="org">所屬機構 <span class="req">*</span></label>
+        <input type="text" id="org" required></div>
+      <div class="field"><label for="emp_id">員工證編號</label>
+        <input type="text" id="emp_id"></div>
+    </div>
+
+    <div class="field"><label for="phone">聯絡電話 <span class="req">*</span></label>
+      <input type="tel" id="phone" required></div>
+
+    <div class="row">
+      <div class="field"><label for="emerg_contact">緊急聯絡人 <span class="req">*</span></label>
+        <input type="text" id="emerg_contact" required></div>
+      <div class="field"><label for="emerg_phone">聯絡電話 <span class="req">*</span></label>
+        <input type="tel" id="emerg_phone" required></div>
+    </div>
+
+    <div class="section-title">二、健康及參賽聲明</div>
+    <div class="decl">
+      本人確認以上所填資料真實、完整，並與身份證明文件相符。本人聲明目前身體狀況適合參加3000米田徑比賽，已了解參賽可能涉及之風險，願意遵守大會競賽規程及現場工作人員指示。如資料不實或隱瞞不適宜參賽之健康狀況，本人願意承擔相應責任。
+    </div>
+    <label class="agree"><input type="checkbox" id="agreement" required> 本人已閱讀並同意上述聲明。</label>
+
+    <div class="field">
+      <label>參加者簽署 <span class="req">*</span></label>
+      <div class="sig-wrap"><canvas id="sigCanvas"></canvas></div>
+      <div class="sig-tools">
+        <span id="sigHint">請在框內用手指或滑鼠簽名</span>
+        <button type="button" class="btn-sec" id="sigClear">清除重簽</button>
+      </div>
+      <div class="sig-date">日期：<span id="signDate"></span><span class="hint">（按提交日期自動填入）</span></div>
+    </div>
+
+    <button type="submit" id="submitBtn">送出報名資料</button>
+  </fieldset>
+  </form>
+
+  <div id="resultMessage"></div>
+
+<script>
+(function () {
+  // ===== 設定 =====
+  const scriptURL = 'https://script.google.com/macros/s/AKfycbwNhRxZj_b-5cGh7HwaVtEtwmS5y_516mxhTwmcKhSqyhttNTzKUW3xohs7lkXJAL7I/exec';
+  const OPEN_MIN_YEAR = 1981;   // 公開組：1981–2006 年出生（20–45 歲）
+  const OPEN_MAX_YEAR = 2006;   // 1980 年以前出生 → 先進組（46 歲以上）
+  const DEADLINE = new Date('2026-11-06T23:59:59+08:00');  // 報名截止（澳門時間）
+
+  const form = document.getElementById('regForm');
+  const btn = document.getElementById('submitBtn');
+  const resultDiv = document.getElementById('resultMessage');
+  const dobEl = document.getElementById('dob');
+  const groupEl = document.getElementById('group');
+  const hintEl = document.getElementById('groupHint');
+  const closed = new Date() > DEADLINE;
+
+  // ===== 日期 =====
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  dobEl.max = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate());
+  document.getElementById('signDate').textContent =
+    now.getFullYear() + '年' + (now.getMonth() + 1) + '月' + now.getDate() + '日';
+
+  if (closed) {
+    document.getElementById('closedBanner').style.display = 'block';
+    document.getElementById('fields').disabled = true;
+  }
+
+  // ===== 組別自動判定 =====
+  function getGender() {
+    const c = document.querySelector('input[name="gender"]:checked');
+    return c ? c.value : '';
+  }
+  function setHint(text, cls) { hintEl.textContent = text; hintEl.className = 'hint' + (cls ? ' ' + cls : ''); }
+
+  function updateGroup() {
+    const g = getGender(), dob = dobEl.value;
+    groupEl.value = '';
+    if (!g || !dob) { setHint('請先選擇性別及出生日期，系統會自動判定組別。'); return; }
+    const ys = dob.split('-')[0];
+    const y = parseInt(ys, 10);
+    if (ys.length !== 4 || !(y >= 1900)) { setHint('請檢查出生日期。', 'warn'); return; }
+    if (y > OPEN_MAX_YEAR) {
+      setHint('出生年份為 ' + y + ' 年，未符合參賽年齡（公開組須為 1981–2006 年出生）。', 'warn');
+      return;
+    }
+    const tier = y >= OPEN_MIN_YEAR ? '公開組' : '先進組';
+    groupEl.value = (g === '男' ? '男子' : '女子') + tier;
+    setHint('已按出生年份（' + y + ' 年）自動判定。', 'ok');
+  }
+  dobEl.addEventListener('input', updateGroup);
+  dobEl.addEventListener('change', updateGroup);
+  document.querySelectorAll('input[name="gender"]').forEach(r => r.addEventListener('change', updateGroup));
+
+  // ===== 手寫簽署 =====
+  const canvas = document.getElementById('sigCanvas');
+  const ctx = canvas.getContext('2d');
+  const sigHint = document.getElementById('sigHint');
+  canvas.width = 600; canvas.height = 200;          // 固定內部解析度（3:1），PDF 內以同比例縮放
+  function resetPen() { ctx.lineWidth = 3.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#000'; }
+  resetPen();
+  let drawing = false, hasSig = false, last = null;
+
+  function pos(e) {
+    const r = canvas.getBoundingClientRect();
+    return { x: (e.clientX - r.left) * canvas.width / r.width,
+             y: (e.clientY - r.top) * canvas.height / r.height };
+  }
+  canvas.addEventListener('pointerdown', e => {
+    if (closed) return;
+    e.preventDefault();
+    canvas.setPointerCapture(e.pointerId);
+    drawing = true; last = pos(e);
+    ctx.beginPath(); ctx.moveTo(last.x, last.y); ctx.lineTo(last.x + 0.01, last.y + 0.01); ctx.stroke();
+    hasSig = true; sigHint.textContent = '請在框內用手指或滑鼠簽名'; sigHint.style.color = '';
+  });
+  canvas.addEventListener('pointermove', e => {
+    if (!drawing) return;
+    e.preventDefault();
+    const p = pos(e);
+    ctx.beginPath(); ctx.moveTo(last.x, last.y); ctx.lineTo(p.x, p.y); ctx.stroke();
+    last = p;
+  });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev =>
+    canvas.addEventListener(ev, () => { drawing = false; }));
+
+  function clearSig() { ctx.clearRect(0, 0, canvas.width, canvas.height); hasSig = false; }
+  document.getElementById('sigClear').addEventListener('click', clearSig);
+
+  // ===== 提交 =====
+  function showError(msg) { resultDiv.innerHTML = '<span class="err">' + msg + '</span>'; }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    resultDiv.innerHTML = '';
+    if (closed) { showError('報名已截止。'); return; }
+    if (!form.reportValidity()) return;                      // 必填欄位、同意聲明
+    if (!getGender()) { showError('請選擇性別。'); return; }
+    if (!groupEl.value) { showError('未能判定報名組別，請檢查性別及出生日期。'); return; }
+    if (!hasSig) {
+      sigHint.textContent = '請先簽署'; sigHint.style.color = 'var(--warn)';
+      canvas.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      showError('請在簽署框內簽名。');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerText = '資料處理中，正在生成報名表...';
+
+    const data = {
+      name: document.getElementById('name').value.trim(),
+      gender: getGender(),
+      dob: dobEl.value,
+      group: groupEl.value,
+      id_num: document.getElementById('id_num').value.trim(),
+      license_num: document.getElementById('license_num').value.trim(),
+      org: document.getElementById('org').value.trim(),
+      emp_id: document.getElementById('emp_id').value.trim(),
+      phone: document.getElementById('phone').value.trim(),
+      emerg_contact: document.getElementById('emerg_contact').value.trim(),
+      emerg_phone: document.getElementById('emerg_phone').value.trim(),
+      signature: canvas.toDataURL('image/png')               // 手寫簽名（PNG base64）
+    };
+
+    fetch(scriptURL, { method: 'POST', body: JSON.stringify(data) })
+      .then(res => res.json())
+      .then(response => {
+        if (response.status === 'success') {
+          resultDiv.innerHTML = '<span style="color:green;">報名成功！</span><br><br>' +
+            '<a href="' + response.pdfUrl + '" target="_blank" style="display:inline-block; padding:10px 14px; background:#28a745; color:white; text-decoration:none; border-radius:5px;">📥 點此下載/查看您的專屬 PDF 報名表</a>';
+          form.reset(); clearSig(); updateGroup();
+          btn.style.display = 'none';
+        } else {
+          console.error(response.message);
+          showError(response.message ? '提交失敗：' + response.message : '發生錯誤，請稍後再試。');
+          btn.disabled = false; btn.innerText = '送出報名資料';
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        showError('網路錯誤，請稍後再試。');
+        btn.disabled = false; btn.innerText = '送出報名資料';
+      });
+  });
+})();
+</script>
 </body>
 </html>

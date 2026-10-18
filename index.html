@@ -34,6 +34,8 @@
   input[type="text"], input[type="tel"], input[type="date"] {
     width:100%; padding:9px 10px; font-size:15px; border:1.5px solid #333; border-radius:4px; background:#fff; }
   input[readonly] { background:#f0f0f0; font-weight:bold; }
+  .dob-row { display:grid; grid-template-columns:1.3fr 1fr 1fr; gap:8px; }
+  select { width:100%; padding:9px 6px; font-size:15px; border:1.5px solid #333; border-radius:4px; background:#fff; }
   .row { display:grid; grid-template-columns:1fr 1fr; gap:0 14px; }
   @media (max-width:520px) { .row { grid-template-columns:1fr; } }
   .radios { display:flex; gap:22px; padding:8px 0; }
@@ -100,8 +102,13 @@
     </div>
 
     <div class="row">
-      <div class="field"><label for="dob">出生日期 <span class="req">*</span></label>
-        <input type="date" id="dob" required min="1900-01-01"></div>
+      <div class="field"><label for="dobY">出生日期 <span class="req">*</span></label>
+        <div class="dob-row">
+          <select id="dobY" required><option value="">年</option></select>
+          <select id="dobM" required><option value="">月</option></select>
+          <select id="dobD" required><option value="">日</option></select>
+        </div>
+        <input type="hidden" id="dob"></div>
       <div class="field"><label for="group">報名組別（自動判定）</label>
         <input type="text" id="group" readonly placeholder="選擇性別及出生日期後自動顯示"></div>
     </div>
@@ -155,7 +162,7 @@
 <script>
 (function () {
   // ===== 設定 =====
-  const scriptURL = 'https://script.google.com/macros/s/AKfycbw7qYuvPB2Ds5C6b-oRGUdTuumaUimnKmvUrRAXllk23ejqnyqELlbvP_9hLDLegOD0/exec';
+  const scriptURL = 'https://script.google.com/macros/s/AKfycbyXhMePuDHKSSbtJkLbPCl8BGNdBmHMJZc9Fs4hni_yqYS13RuuvlzFtx0GdVSX0cc/exec';
   const OPEN_MIN_YEAR = 1981;   // 公開組：1981–2006 年出生（20–45 歲）
   const OPEN_MAX_YEAR = 2006;   // 1980 年以前出生 → 先進組（46 歲以上）
   const DEADLINE = new Date('2026-11-06T23:59:59+08:00');  // 僅供備用；正式截止時間以 Code.gs 伺服器時間為準
@@ -171,7 +178,21 @@
   // ===== 日期 =====
   const now = new Date();
   const pad = n => String(n).padStart(2, '0');
-  dobEl.max = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate());
+  // ===== 出生日期：年／月／日下拉選單（避免日曆預設跳到奇怪的年份）=====
+  const yEl = document.getElementById('dobY'), mEl = document.getElementById('dobM'), dEl = document.getElementById('dobD');
+  for (let y = now.getFullYear(); y >= 1930; y--) yEl.add(new Option(y + ' 年', y));
+  for (let m = 1; m <= 12; m++) mEl.add(new Option(m + ' 月', pad(m)));
+  for (let d = 1; d <= 31; d++) dEl.add(new Option(d + ' 日', pad(d)));
+  function syncDob() {
+    if (yEl.value && mEl.value) {                       // 依年月限制日數（例如 2 月、小月）
+      const max = new Date(+yEl.value, +mEl.value, 0).getDate();
+      Array.from(dEl.options).forEach(o => { if (o.value) o.hidden = o.disabled = (+o.value > max); });
+      if (dEl.value && +dEl.value > max) dEl.value = '';
+    }
+    dobEl.value = (yEl.value && mEl.value && dEl.value) ? yEl.value + '-' + mEl.value + '-' + dEl.value : '';
+    dobEl.dispatchEvent(new Event('input'));
+  }
+  [yEl, mEl, dEl].forEach(el => el.addEventListener('change', syncDob));
   document.getElementById('signDate').textContent =
     now.getFullYear() + '年' + (now.getMonth() + 1) + '月' + now.getDate() + '日';
 
@@ -297,7 +318,7 @@
             (response.serial ? '報名序號：<span style="font-size:20px;">' + response.serial + '</span><br>請保留此序號以便日後查詢。<br>' : '') +
             '<br>' +
             '<a href="' + response.pdfUrl + '" target="_blank" style="display:inline-block; padding:10px 14px; background:#28a745; color:white; text-decoration:none; border-radius:5px;">📥 點此下載/查看您的專屬 PDF 報名表</a>';
-          form.reset(); clearSig(); updateGroup();
+          form.reset(); clearSig(); syncDob();
           btn.style.display = 'none';
         } else {
           console.error(response.message);

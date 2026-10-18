@@ -155,10 +155,10 @@
 <script>
 (function () {
   // ===== 設定 =====
-  const scriptURL = 'https://script.google.com/macros/s/AKfycbwNhRxZj_b-5cGh7HwaVtEtwmS5y_516mxhTwmcKhSqyhttNTzKUW3xohs7lkXJAL7I/exec';
+  const scriptURL = 'https://script.google.com/macros/s/AKfycbw7qYuvPB2Ds5C6b-oRGUdTuumaUimnKmvUrRAXllk23ejqnyqELlbvP_9hLDLegOD0/exec';
   const OPEN_MIN_YEAR = 1981;   // 公開組：1981–2006 年出生（20–45 歲）
   const OPEN_MAX_YEAR = 2006;   // 1980 年以前出生 → 先進組（46 歲以上）
-  const DEADLINE = new Date('2026-11-06T23:59:59+08:00');  // 報名截止（澳門時間）
+  const DEADLINE = new Date('2026-11-06T23:59:59+08:00');  // 僅供備用；正式截止時間以 Code.gs 伺服器時間為準
 
   const form = document.getElementById('regForm');
   const btn = document.getElementById('submitBtn');
@@ -166,7 +166,7 @@
   const dobEl = document.getElementById('dob');
   const groupEl = document.getElementById('group');
   const hintEl = document.getElementById('groupHint');
-  const closed = new Date() > DEADLINE;
+  let closed = false;
 
   // ===== 日期 =====
   const now = new Date();
@@ -175,10 +175,23 @@
   document.getElementById('signDate').textContent =
     now.getFullYear() + '年' + (now.getMonth() + 1) + '月' + now.getDate() + '日';
 
-  if (closed) {
+  function setClosed() {
+    closed = true;
     document.getElementById('closedBanner').style.display = 'block';
     document.getElementById('fields').disabled = true;
   }
+  // 向伺服器（Apps Script）查詢是否仍可報名及澳門日期，不使用參加者自己裝置的時鐘
+  fetch(scriptURL)
+    .then(r => r.json())
+    .then(j => {
+      if (j.open === false) setClosed();
+      if (j.serverTime) {
+        const p = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Macau', year: 'numeric', month: 'numeric', day: 'numeric' })
+          .formatToParts(new Date(j.serverTime)).reduce((a, x) => (a[x.type] = x.value, a), {});
+        document.getElementById('signDate').textContent = p.year + '年' + p.month + '月' + p.day + '日';
+      }
+    })
+    .catch(() => { if (new Date() > DEADLINE) setClosed(); });   // 連不上伺服器時的備用判斷
 
   // ===== 組別自動判定 =====
   function getGender() {
@@ -280,7 +293,9 @@
       .then(res => res.json())
       .then(response => {
         if (response.status === 'success') {
-          resultDiv.innerHTML = '<span style="color:green;">報名成功！</span><br><br>' +
+          resultDiv.innerHTML = '<span style="color:green;">報名成功！</span><br>' +
+            (response.serial ? '報名序號：<span style="font-size:20px;">' + response.serial + '</span><br>請保留此序號以便日後查詢。<br>' : '') +
+            '<br>' +
             '<a href="' + response.pdfUrl + '" target="_blank" style="display:inline-block; padding:10px 14px; background:#28a745; color:white; text-decoration:none; border-radius:5px;">📥 點此下載/查看您的專屬 PDF 報名表</a>';
           form.reset(); clearSig(); updateGroup();
           btn.style.display = 'none';
